@@ -2,7 +2,13 @@ import { getMemberByUserId } from "@/app/actions/memberActions"
 import { CardBody, CardHeader, Divider } from "@nextui-org/react";
 import { notFound } from "next/navigation";
 
-export default async function MemberDetailedPage({params} : {params: { userId: string }}) {
+type Props = {
+    params: {
+        userId: string
+    }
+}
+
+export default async function MemberDetailedPage({params}:Props) {
     const member = await getMemberByUserId(params.userId);
 
     if (!member) {
