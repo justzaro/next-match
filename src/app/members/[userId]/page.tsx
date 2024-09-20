@@ -1,5 +1,5 @@
 import { getMemberByUserId } from "@/app/actions/memberActions"
-import { CardBody, CardHeader, Divider } from "@nextui-org/react";
+import CardInnerWrapper from "@/components/CardInnerWrapper";
 import { notFound } from "next/navigation";
 
 type Props = {
@@ -16,14 +16,9 @@ export default async function MemberDetailedPage({params}:Props) {
     }
 
     return (
-        <>
-            <CardHeader className="text-2xl font-semibold text-secondary">
-                Profile
-            </CardHeader>
-            <Divider />
-            <CardBody>
-                Description
-            </CardBody>
-        </>
+        <CardInnerWrapper
+            header="Profile"
+            body={<div>{member.description}</div>}
+        />
     )
 }

@@ -57,8 +57,11 @@ model Member {
   image       String
   photos      Photo[]
 
-  soruceLikes Like[] @relation("source")
+  sourceLikes Like[] @relation("source")
   targetLikes Like[] @relation("target")
+
+  senderMessages    Message[] @relation("sender")
+  recipientMessages Message[] @relation("recipient")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -75,9 +78,23 @@ model Photo {
 model Like {
   sourceUserId String
   sourceMember Member @relation("source", fields: [sourceUserId], references: [userId], onDelete: Cascade)
-  
+
   targetUserId String
   targetMember Member @relation("target", fields: [targetUserId], references: [userId], onDelete: Cascade)
 
   @@id([sourceUserId, targetUserId])
+}
+
+model Message {
+  id               String   @id @default(cuid())
+  text             String
+  created          DateTime @default(now())
+  senderId         String?
+  recipientId      String?
+  dateRead         DateTime?
+  senderDeleted    Boolean  @default(false)
+  recipientDeleted Boolean  @default(false)
+
+  sender    Member? @relation("sender", fields: [senderId], references: [userId], onDelete: SetNull)
+  recipient Member? @relation("recipient", fields: [recipientId], references: [userId], onDelete: SetNull)
 }
