@@ -1,7 +1,8 @@
 'use server'
 
 import { prisma } from "@/lib/prisma";
-import { getAuthUserId } from "./authActions";
+import { getAuthUserId, getUserById } from "./authActions";
+import { pusherServer } from "@/lib/pusher";
 
 export async function toggleLikeMember(targetUserId: string, isLiked: boolean) {
     const userId = await getAuthUserId();
@@ -17,12 +18,16 @@ export async function toggleLikeMember(targetUserId: string, isLiked: boolean) {
                 }
             })
         } else {
-            await prisma.like.create({
+            const like = await prisma.like.create({
                 data: {
                     sourceUserId: userId,
                     targetUserId
                 }
-            })
+            });
+            
+            const user = await getUserById(like.sourceUserId);
+            
+            await pusherServer.trigger(`private-${targetUserId}`, "like:new", {user: user, like: like});
         }
     } catch (error) {
         console.log(error);

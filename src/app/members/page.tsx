@@ -9,17 +9,11 @@ export default async function MembersPage() {
 
   return (
     <div>
-        
-          {/* {members?.map(
-            <li></li>
-          )} */}
-
         <div className="mt-10 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-8">
             {members && members.map(member => (
               <MemberCard member={member} key={member.id} likedIds={likedIds} />
             ))}
         </div>
-
     </div>
   )
 }

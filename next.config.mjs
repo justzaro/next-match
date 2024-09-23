@@ -7,8 +7,13 @@ const nextConfig = {
                 hostname: 'res.cloudinary.com',
                 port: '',
                 pathname: '/**'
-            }
+            } 
         ]
+    },
+    experimental: {
+        staleTimes: {
+            dynamic: 0
+        }
     }
 };
 

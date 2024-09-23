@@ -8,6 +8,10 @@ export default async function Home() {
 
   return (
     <div>
+      
+      <h1>asd</h1>
+      <h1>{process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}</h1>
+      <h1>{process.env.CLOUNDINARY_API_SECRET}</h1>
       <h1 className="text-3xl">Hello app!</h1>
       <h3 className="text-2xl font-semibold">User session data: </h3>
       {session ? (

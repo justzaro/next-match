@@ -1,23 +1,23 @@
 'use server'
 
 import { messageSchema, MessageSchema } from "@/lib/schemas/messageSchema";
-import { ActionResult } from "@/types";
-import { Message } from "@prisma/client";
+import { ActionResult, MessageDto } from "@/types";
 import { getAuthUserId } from "./authActions";
 import { prisma } from "@/lib/prisma";
 import { mapMessageToMessageDto } from "@/lib/mappings";
+import { pusherServer } from "@/lib/pusher";
+import { createChatId } from "@/lib/utils";
 
 export async function createMessage(
     recipientUserId: string,
     data: MessageSchema
-) : Promise<ActionResult<Message>>
-{
+): Promise<ActionResult<MessageDto>> {
     try {
         const userId = await getAuthUserId();
 
         const validated = messageSchema.safeParse(data);
 
-        if(!validated.success) {
+        if (!validated.success) {
             return {
                 status: "error",
                 error: validated.error.errors
@@ -31,12 +31,27 @@ export async function createMessage(
                 text,
                 recipientId: recipientUserId,
                 senderId: userId
-            }
+            },
+            select: messageSelect
         })
+
+        const messageDto = mapMessageToMessageDto(message);
+
+        await pusherServer.trigger(
+            createChatId(userId, recipientUserId),
+            'message:new',
+            messageDto
+        )
+
+        await pusherServer.trigger(
+            `private-${recipientUserId}`,
+            'message:new',
+            messageDto
+        );
 
         return {
             status: "success",
-            data: message
+            data: messageDto
         };
     } catch (error) {
         console.log(error);
@@ -69,44 +84,42 @@ export async function getMessageThread(recipientId: string) {
             orderBy: {
                 created: 'asc'
             },
-            select: {
-                id: true,
-                text: true,
-                created: true,
-                dateRead: true,
-                sender: {
-                    select: {
-                        userId: true,
-                        name: true,
-                        image: true
-                    }
-                },
-                recipient: {
-                    select: {
-                        userId: true,
-                        name: true,
-                        image: true  
-                    }
-                }
-            }
+            select: messageSelect
         });
 
-        if(messages.length > 0) {
+        let readCount = 0;
+
+        if (messages.length > 0) {
+            const readMessageIds = messages
+                .filter(m => m.dateRead === null &&
+                    m.recipient?.userId === userId &&
+                    m.sender?.userId === recipientId)
+                .map(m => m.id);
+
             await prisma.message.updateMany({
                 where: {
-                    senderId: recipientId,
-                    recipientId: userId,
-                    dateRead: null
+                    id: {
+                        in: readMessageIds
+                    }
                 },
                 data: {
                     dateRead: new Date()
                 }
             });
+            
+            readCount = readMessageIds.length;
+
+            await pusherServer.trigger(createChatId(recipientId, userId), "messages:read", readMessageIds);
         }
 
-        return messages.map(message => (
+        const messagesToReturn = messages.map(message => (
             mapMessageToMessageDto(message)
         ));
+
+        return {
+            messages: messagesToReturn,
+            readCount: readCount
+        };
     } catch (error) {
         console.log(error);
         throw error;
@@ -119,7 +132,7 @@ export async function getMessagesByContainer(container: string) {
 
         const conditions = {
             [container === 'outbox' ? 'senderId' : 'recipientId']: userId,
-            ...(container === 'outbox' ? {senderDeleted: false} : {recipientDeleted: false})
+            ...(container === 'outbox' ? { senderDeleted: false } : { recipientDeleted: false })
         }
 
         const messages = await prisma.message.findMany({
@@ -127,26 +140,7 @@ export async function getMessagesByContainer(container: string) {
             orderBy: {
                 created: 'desc'
             },
-            select: {
-                id: true,
-                text: true,
-                created: true,
-                dateRead: true,
-                sender: {
-                    select: {
-                        userId: true,
-                        name: true,
-                        image: true
-                    }
-                },
-                recipient: {
-                    select: {
-                        userId: true,
-                        name: true,
-                        image: true  
-                    }
-                }
-            }
+            select: messageSelect
         });
 
         return messages.map(message => (
@@ -190,7 +184,7 @@ export async function deleteMessage(messageId: string, isOutbox: boolean) {
             }
         });
 
-        if(messagesToDelete.length > 0) {
+        if (messagesToDelete.length > 0) {
             await prisma.message.deleteMany({
                 where: {
                     id: {
@@ -202,5 +196,42 @@ export async function deleteMessage(messageId: string, isOutbox: boolean) {
     } catch (error) {
         console.log(error);
         throw error;
+    }
+}
+
+export async function getUnreadMessageCount() {
+    try {
+        const userId = await getAuthUserId();
+        return prisma.message.count({
+            where: {
+                recipientId: userId,
+                dateRead: null,
+                recipientDeleted: false
+            }
+        })
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+const messageSelect = {
+    id: true,
+    text: true,
+    created: true,
+    dateRead: true,
+    sender: {
+        select: {
+            userId: true,
+            name: true,
+            image: true
+        }
+    },
+    recipient: {
+        select: {
+            userId: true,
+            name: true,
+            image: true
+        }
     }
 }
