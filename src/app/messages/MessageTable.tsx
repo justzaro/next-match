@@ -1,15 +1,16 @@
 'use client'
 
 import { MessageDto } from "@/types";
-import { Card, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
+import { Button, Card, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
 import MessageTableCell from "./MessageTableCell";
 import { useMessages } from "@/hooks/useMessages";
 
 type Props = {
     initialMessages: MessageDto[];
+    nextCursor?: string
 }
 
-export default function MessageTable({ initialMessages }: Props) {
+export default function MessageTable({ initialMessages, nextCursor }: Props) {
 
     const {
         isOutbox,
@@ -17,17 +18,22 @@ export default function MessageTable({ initialMessages }: Props) {
         isDeleting,
         messages,
         deleteMessage,
-        selectRow
+        selectRow,
+        loadMore,
+        loadingMore,
+        hasMore
     }
-    = useMessages(initialMessages);
+    = useMessages(initialMessages, nextCursor);
 
     return (
-        <Card className="flex flex-col gap-3 h-[80vh] overflow-auto">
+        <div className="flex flex-col h-[80vh]">
+<Card>
             <Table
                 aria-label="Table with messages"
                 selectionMode="single"
                 onRowAction={(key) => selectRow(key)}
                 shadow="none"
+                className="flex flex-col gap-3 h-[80vh] overflow-auto"
             >
                 <TableHeader columns={columns}>
                     {(column) =>
@@ -57,6 +63,18 @@ export default function MessageTable({ initialMessages }: Props) {
                     )}
                 </TableBody>
             </Table>
-        </Card>
+            <div className="sticky bottom-0 pb-3 mr-3 text-right">
+                <Button
+                    color="secondary"
+                    isLoading={loadingMore}
+                    isDisabled={!hasMore}
+                    onClick={loadMore}
+                >
+                    {hasMore ? "Load more" : "No more messages."}
+                </Button>
+            </div>
+           </Card>
+        </div>
+        
     )
 }

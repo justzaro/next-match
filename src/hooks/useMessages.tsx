@@ -1,11 +1,11 @@
-import { deleteMessage } from "@/app/actions/messageActions";
+import { deleteMessage, getMessagesByContainer } from "@/app/actions/messageActions";
 import { MessageDto } from "@/types";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Key } from "readline";
 import useMessageStore from "./useMessageStore";
 
-export const useMessages = (initialMessages: MessageDto[]) => {
+export const useMessages = (initialMessages: MessageDto[], nextCursor?: string) => {
     
     // const { set, add, messages } = useMessageStore(state => ({
     //     set: state.set,
@@ -13,26 +13,43 @@ export const useMessages = (initialMessages: MessageDto[]) => {
     //     messages: state.messages
     // }));
 
-    const set = useMessageStore(state => state.set);
-    const add = useMessageStore(state => state.add);
-    const remove = useMessageStore(state => state.remove);
-    const updateUnreadCount = useMessageStore(state => state.updateUnreadCount);
-    const messages = useMessageStore(state => state.messages);
+    const { 
+        set,
+        remove,
+        updateUnreadCount,
+        messages,
+        resetMessages 
+    } = useMessageStore();
 
+    const cursorRef = useRef(nextCursor);
     const searchParms = useSearchParams();
     const router = useRouter();
     const isOutbox = searchParms.get('container') === 'outbox';
+    const container = searchParms.get('container');
     const [isDeleting, setIsDeleting] = useState({
         id: '',
         loading: false
-    })
+    });
+    const [loadingMore, setLoadingMore] = useState(false);
+
+
+    const loadMore = useCallback(async () => {
+        if(cursorRef.current) {
+            setLoadingMore(true);
+            const { messages, nextCursor } = await getMessagesByContainer(container, cursorRef.current);
+            set(messages);
+            cursorRef.current = nextCursor;
+            setLoadingMore(false);
+        }
+    }, [container, set]);
 
     useEffect(() => {
+        cursorRef.current = nextCursor;
         set(initialMessages);
         return () => {
-            set([]);
+            resetMessages();
         }
-    }, [initialMessages, set]);
+    }, [initialMessages, set, resetMessages, nextCursor]);
 
     const columns = [
         {
@@ -73,6 +90,9 @@ export const useMessages = (initialMessages: MessageDto[]) => {
         deleteMessage: handleDeleteMessage,
         selectRow: handleRowSelect,
         isDeleting,
-        messages
+        messages,
+        loadMore,
+        loadingMore,
+        hasMore: !!cursorRef.current
     }
 }

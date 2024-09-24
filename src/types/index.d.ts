@@ -40,3 +40,34 @@ type MessageWithSenderRecipient = Prisma.MessageGetPayload<{
         }
     }
 }>
+
+type UserFilters = {
+    ageRange: number[],
+    orderBy: string,
+    gender: string[],
+    withPhoto: boolean;
+}
+
+type PagingParms = {
+    pageNumber: number;
+    pageSize: number;
+}
+
+type PagingResult = {
+    totalPages: number;
+    totalCount: number;
+} & PagingParms
+
+type PaginatedResponse<T> = {
+    items: T[];
+    totalCount: number;
+}
+
+type GetMemberParams = {
+    ageRange?: string,
+    gender?: string,
+    orderBy?: string,
+    pageNumber?: string,
+    pageSize?: string,
+    withPhoto?: string
+}
