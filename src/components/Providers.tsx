@@ -10,7 +10,13 @@ import { ReactNode, useCallback, useEffect, useRef } from "react";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css'
 
-export default function Providers({ children, userId }: { children: ReactNode, userId: string | null }) {
+type Props = {
+  children: ReactNode;
+  userId: string | null;
+  profileComplete: boolean;
+}
+
+export default function Providers({ children, userId, profileComplete }: Props) {
   const isUnreadCountSet = useRef(false);
   const updateReadCount = useMessageStore(state => state.updateUnreadCount);
   
@@ -27,8 +33,8 @@ export default function Providers({ children, userId }: { children: ReactNode, u
     }
   }, [setUnreadCount, userId]);
 
-  usePresenceChannel();
-  useNotificationChannel(userId);
+  usePresenceChannel(userId, profileComplete);
+  useNotificationChannel(userId, profileComplete);
   useLikesChannel(userId);
   return (
     <NextUIProvider>

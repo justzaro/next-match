@@ -43,7 +43,7 @@ export default async function TopNav() {
                         <UserMenu userInfo={userInfo}></UserMenu>
                     ) : (
                         <>
-                            <Button as={Link} href="/auth/login" variant="bordered" className="text-white">LogIn</Button>
+                            <Button as={Link} href="/auth/login" variant="bordered" className="text-white">Log in</Button>
                             <Button as={Link} href="/auth/register" variant="bordered" className="text-white">Register</Button>
                         </>
                     )}

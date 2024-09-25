@@ -4,18 +4,23 @@ import { singInUser } from "@/app/actions/authActions";
 import { loginSchema, LoginSchema } from "@/lib/schemas/loginSchemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Card, CardBody, CardHeader, Input } from "@nextui-org/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { GiPadlock } from "react-icons/gi";
 import { toast } from "react-toastify";
+import SocialLogin from "./SocialLogin";
 
 export default function LoginForm() {
     const router = useRouter();
 
-    const { 
-        register, 
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    const {
+        register,
         handleSubmit,
-        formState: { errors, isSubmitting }
+        formState: { errors, isSubmitting, isValid }
     } = useForm<LoginSchema>({
         resolver: zodResolver(loginSchema),
         mode: "onTouched",
@@ -24,11 +29,12 @@ export default function LoginForm() {
             password: ""
         }
     });
-  
+
     const onSubmit = async (data: LoginSchema) => {
         const result = await singInUser(data);
 
-        if(result.status === "success") {
+        if (result.status === "success") {
+            setIsLoggedIn(true);
             router.push("/members");
             router.refresh();
         } else {
@@ -49,7 +55,7 @@ export default function LoginForm() {
             </CardHeader>
             <CardBody>
                 <form onSubmit={handleSubmit(onSubmit)}>
-            
+
                     <div className="space-y-4">
                         <Input
                             size="lg"
@@ -73,13 +79,17 @@ export default function LoginForm() {
                         )}
                         <Button
                             isLoading={isSubmitting}
-                            isDisabled={isSubmitting} 
-                            fullWidth 
-                            color="secondary" 
-                            type="submit" 
+                            isDisabled={isSubmitting || !isValid || isLoggedIn}
+                            fullWidth
+                            color="secondary"
+                            type="submit"
                             size="lg">
-                        {isSubmitting ? 'Loading...' : 'Log in'}
+                            {isSubmitting ? 'Loading...' : isLoggedIn ? 'Logging in...' : 'Log in'}
                         </Button>
+                        <SocialLogin />
+                        <div className="flex justify-center hover:underline text-sm">
+                            <Link href={"/auth/forgotten-password"}>Forgotten password?</Link>
+                        </div>
                     </div>
                 </form>
             </CardBody>

@@ -6,7 +6,7 @@ import { useRef, useEffect, useCallback } from "react"
 import useMessageStore from "./useMessageStore";
 import { newMessageToast } from "@/components/NewMessageToast";
 
-export const useNotificationChannel = (userId: string | null) => {
+export const useNotificationChannel = (userId: string | null, profileComplete: boolean) => {
     const channelRef = useRef<Channel | null>();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -24,7 +24,7 @@ export const useNotificationChannel = (userId: string | null) => {
     }, [add, pathname, searchParams, updateUnreadCount]);
 
     useEffect(() => {
-      if(!userId) {
+      if(!userId || !profileComplete) {
         return;
       }
       if(!channelRef.current) {
@@ -39,6 +39,6 @@ export const useNotificationChannel = (userId: string | null) => {
             channelRef.current = null;
         }
       }
-    }, [userId, handleNewMessage]);
+    }, [userId, profileComplete, handleNewMessage]);
     
 }
