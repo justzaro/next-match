@@ -86,9 +86,13 @@ export default function LoginForm() {
                             size="lg">
                             {isSubmitting ? 'Loading...' : isLoggedIn ? 'Logging in...' : 'Log in'}
                         </Button>
-                        <SocialLogin />
+                        <SocialLogin isLoggedIn={isLoggedIn} isSubmitting={isSubmitting} />
                         <div className="flex justify-center hover:underline text-sm">
-                            <Link href={"/auth/forgotten-password"}>Forgotten password?</Link>
+                            <Link
+                                href={"/auth/forgotten-password"}
+                                style={{ pointerEvents: (isLoggedIn || isSubmitting) ? "none" : "auto" }}>
+                                Forgotten password?
+                            </Link>
                         </div>
                     </div>
                 </form>

@@ -3,7 +3,12 @@ import { signIn } from "next-auth/react";
 import { FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 
-export default function SocialLogin() {
+type Props = {
+    isSubmitting: boolean;
+    isLoggedIn: boolean;
+}
+
+export default function SocialLogin({isSubmitting, isLoggedIn} : Props) {
 
     const onClick = (provider: "google" | "github") => {
         signIn(provider, {
@@ -18,6 +23,7 @@ export default function SocialLogin() {
             fullWidth
             variant="bordered"
             onClick={() => onClick('google')}
+            isDisabled={isSubmitting || isLoggedIn}
         >
             <FcGoogle size={22}/>
         </Button>
@@ -26,6 +32,7 @@ export default function SocialLogin() {
             fullWidth
             variant="bordered"
             onClick={() => onClick('github')}
+            isDisabled={isSubmitting || isLoggedIn}
         >
             <FaGithub size={22}/>
         </Button>

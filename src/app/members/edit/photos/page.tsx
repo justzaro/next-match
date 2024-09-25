@@ -1,6 +1,5 @@
 import { getAuthUserId } from "@/app/actions/authActions";
 import { getMemberByUserId, getMemberPhotosByUserId } from "@/app/actions/memberActions";
-import { CardHeader, Divider, CardBody } from "@nextui-org/react";
 import MemberPhotoUpload from "./MemberPhotoUpload";
 import MemberPhotos from "@/components/MemberPhotos";
 import CardInnerWrapper from "@/components/CardInnerWrapper";

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { Photo } from "@prisma/client"
@@ -7,6 +8,7 @@ import StarButton from "./StarButton"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { deleteImage, setMainImage } from "@/app/actions/userActions"
+import { toast } from "react-toastify"
 
 type Props = {
     photos: Photo[] | null;
@@ -50,13 +52,19 @@ export default function MemberPhotos({ photos, editing, mainImageUrl }: Props) {
             isLoading: true,
             id: photo.id
         });
-        await setMainImage(photo);
-        router.refresh();
-        setLoading({
-            type: '',
-            isLoading: false,
-            id: ''
-        });
+        
+        try {
+            await setMainImage(photo);
+            router.refresh();
+        } catch (error: any) {
+            toast.error(error.message);
+        } finally {
+            setLoading({
+                type: '',
+                isLoading: false,
+                id: ''
+            });
+        }
     }
 
     return (
