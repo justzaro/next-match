@@ -1,18 +1,11 @@
 import { deleteMessage, getMessagesByContainer } from "@/app/actions/messageActions";
 import { MessageDto } from "@/types";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState, useCallback, useEffect, useRef } from "react";
-import { Key } from "readline";
+import { useState, useCallback, useEffect, useRef, Key } from "react";
 import useMessageStore from "./useMessageStore";
 
 export const useMessages = (initialMessages: MessageDto[], nextCursor?: string) => {
     
-    // const { set, add, messages } = useMessageStore(state => ({
-    //     set: state.set,
-    //     add: state.add,
-    //     messages: state.messages
-    // }));
-
     const { 
         set,
         remove,

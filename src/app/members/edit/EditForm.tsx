@@ -48,6 +48,7 @@ export default function EditForm({ member }: Props) {
         if(result.status === "success") {
             toast.success("Profile updated!");
             router.refresh();
+            console.log(data);
             reset({...data})
         } else {
             handleFormServerErrors(result, setError);
