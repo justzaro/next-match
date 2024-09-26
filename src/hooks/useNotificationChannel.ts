@@ -14,11 +14,11 @@ export const useNotificationChannel = (userId: string | null, profileComplete: b
     const updateUnreadCount = useMessageStore(state => state.updateUnreadCount);
 
     const handleNewMessage = useCallback((message: MessageDto) => {
-        if(pathname === '/messages' && searchParams.get('container') !== 'outbox') {
+        if(pathname === '/messages' && searchParams.get('container') !== 'inbox') {
             add(message);
             updateUnreadCount(1);
-        } else if(pathname !== `/members/${message.senderId}/chat`) {
             newMessageToast(message);
+        } else if(pathname !== `/members/${message.senderId}/chat`) {
             updateUnreadCount(1);
         }
     }, [add, pathname, searchParams, updateUnreadCount]);
