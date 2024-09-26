@@ -300,6 +300,7 @@ export async function completeSocialLoginProfile(data: ProfileSchema) :
     }
 
     try {
+        
         const user = await prisma.user.update({
             where: {
                 id: session.user.id

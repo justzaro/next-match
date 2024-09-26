@@ -27,7 +27,7 @@ export default function MessageTable({ initialMessages, nextCursor }: Props) {
 
     return (
         <div className="flex flex-col h-[80vh]">
-<Card>
+        <Card>
             <Table
                 aria-label="Table with messages"
                 selectionMode="single"
